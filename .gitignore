@@ -1,0 +1,10 @@
+tools/
+.snakemake/
+
+*.swp
+simulation/sim/
+
+angsdput*
+
+first_ibd_sim_test/
+.nfs*

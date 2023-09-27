@@ -1,0 +1,11 @@
+{
+	"__default__" :
+	{
+		"mem_mb" : 4000,
+		"n" : 1,
+		"tasks" : 1,
+		"name" : "{rule}-{jobid}",
+		"logfile": "smk_{rule}_%j.out",
+		"errfile": "smk_{rule}_%j.err"
+	}
+}

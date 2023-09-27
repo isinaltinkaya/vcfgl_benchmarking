@@ -1,0 +1,36 @@
+
+tools:
+    vcfgl: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/vcfgl_230927/vcfgl"
+    bedtools: "/opt/software/bedtools/2.31.0/bin/bedtools"
+
+
+simulation_id: "sim_vcfgl_2309"
+
+# average per site depth
+depth: [100, 10, 2, 1, 0.5, 0.1]
+
+model: "OutOfAfrica_3G09"
+
+contig: "chr22"
+
+# Number of replicates
+n_reps: 20
+
+vcfgl_error_rate: 0.002
+
+def_pops:
+    YRI: 50
+    CEU: 50
+    CHB: 0
+
+
+# 1e-X
+beta_variance_values_neg_e: [6, 7]
+
+
+
+# ANGSD SNP CALLING ---------------------- #
+#
+SNP_calling_SNP_pval: "1e-6"
+
+# ---------------------------------------- #
