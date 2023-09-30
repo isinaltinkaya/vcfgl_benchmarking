@@ -1,1 +1,1 @@
-# vcfgl_paper_analyses
+# Benchmarking pipeline
