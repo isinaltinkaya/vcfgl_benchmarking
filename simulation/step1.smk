@@ -16,15 +16,9 @@ import numpy as np
 simulation_id= "sim_vcfgl_2309"
 configfile: "config/"+simulation_id+".yaml"
 
-VCFGL=config['tools']['vcfgl']
 
 MODEL=config['model']
 
-ERROR_RATE=config['vcfgl_error_rate']
-
-VCFGL=config['tools']['vcfgl']
-
-DEPTH=config['depth']
 CONTIG=config['contig']
 REP = [*range(config['n_reps'])]
 
