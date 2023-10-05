@@ -13,12 +13,11 @@
 import stdpopsim, msprime, tskit
 import numpy as np
 
-simulation_id= "sim_vcfgl_2309"
+simulation_id= "sim_vcfgl_2310"
 configfile: "config/"+simulation_id+".yaml"
 
 
 MODEL=config['model']
-
 CONTIG=config['contig']
 REP = [*range(config['n_reps'])]
 
@@ -26,8 +25,6 @@ species=stdpopsim.get_species("HomSap")
 recombination_map_id="HapMapII_GRCh37"
 
 DEF_POPS=config['def_pops']
-
-
 ploidy=2
 
 haplo_list=[]

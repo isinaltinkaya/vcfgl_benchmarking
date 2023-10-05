@@ -8,3 +8,5 @@ angsdput*
 
 first_ibd_sim_test/
 .nfs*
+.Rdata
+.Rhistory
