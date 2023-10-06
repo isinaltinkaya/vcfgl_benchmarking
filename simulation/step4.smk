@@ -61,6 +61,16 @@ rule all:
 # 			error_rate=ERROR_RATE,
 # 			qserr=QSERR,
 # 		),
+# # #9
+		expand("sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.tsv",
+			simid=simulation_id,
+			model_id=MODEL,
+			contig=CONTIG,
+			rep=REP,
+			depth=DEPTH,
+			error_rate=ERROR_RATE,
+			qserr=QSERR,
+		),
 # # # # #2
 # 		expand(
 # 			"sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
@@ -83,18 +93,18 @@ rule all:
 # 			error_rate=ERROR_RATE,
 # 			qserr=QSERR,
 # 		),
-# # # #4
-		expand(
-			"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.txt",
-			simid=simulation_id,
-			model_id=MODEL,
-			contig=CONTIG,
-			rep=REP,
-			depth=DEPTH,
-			error_rate=ERROR_RATE,
-			qserr=QSERR,
-			gtcheck_err=GTCHECK_ERR,
-		),
+# # # # #4
+# 		expand(
+# 			"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.txt",
+# 			simid=simulation_id,
+# 			model_id=MODEL,
+# 			contig=CONTIG,
+# 			rep=REP,
+# 			depth=DEPTH,
+# 			error_rate=ERROR_RATE,
+# 			qserr=QSERR,
+# 			gtcheck_err=GTCHECK_ERR,
+# 		),
 
 
 
@@ -121,91 +131,91 @@ rule get_real_gt:
 		"sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf"
 	shell:
 		"""
-		{BCFTOOLS} annotate -x "FORMAT/GL,FORMAT/PL" {input} |{BCFTOOLS} view --trim-alt-alleles -Ob -o {output}
+		{BCFTOOLS} annotate -x "FORMAT/GL,FORMAT/PL,FORMAT/GP,FORMAT/DP,FORMAT/AD,INFO/QS,INFO/AD,INFO/AC,INFO/AN" {input} |{BCFTOOLS} view --trim-alt-alleles --no-update -Ob -o {output}
 		"""
 
 
-# ###############################################################################
+# # ###############################################################################
 
-# # # # #2
-# 		expand(
-# 			"sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
-# 			simid=simulation_id,
-# 			model_id=MODEL,
-# 			contig=CONTIG,
-# 			rep=REP,
-# 			depth=DEPTH,
-# 			error_rate=ERROR_RATE,
-# 			qserr=QSERR,
-# 		),
-
-
-rule index_for_bcftools_gtcheck_callgt:
-	input:
-		"sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
-	output:
-		"sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
-	shell:
-		"""
-		{BCFTOOLS} index {input};
-		"""
-
-# ###############################################################################
-
-# # # # #3
-# 		expand(
-# 			"sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
-# 			simid=simulation_id,
-# 			model_id=MODEL,
-# 			contig=CONTIG,
-# 			rep=REP,
-# 			depth=DEPTH,
-# 			error_rate=ERROR_RATE,
-# 			qserr=QSERR,
-# 		),
-
-rule index_for_bcftools_gtcheck_truthgt:
-	input:
-		"sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
-	output:
-		"sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
-	shell:
-		"""
-		{BCFTOOLS} index {input};
-		"""
+# # # # # #2
+# # 		expand(
+# # 			"sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
+# # 			simid=simulation_id,
+# # 			model_id=MODEL,
+# # 			contig=CONTIG,
+# # 			rep=REP,
+# # 			depth=DEPTH,
+# # 			error_rate=ERROR_RATE,
+# # 			qserr=QSERR,
+# # 		),
 
 
-# ###############################################################################
+# rule index_for_bcftools_gtcheck_callgt:
+# 	input:
+# 		"sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
+# 	output:
+# 		"sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
+# 	shell:
+# 		"""
+# 		{BCFTOOLS} index {input};
+# 		"""
 
-# # # # #4
-# 		expand(
-# 			"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.txt",
-# 			simid=simulation_id,
-# 			model_id=MODEL,
-# 			contig=CONTIG,
-# 			rep=REP,
-# 			depth=DEPTH,
-# 			error_rate=ERROR_RATE,
-# 			qserr=QSERR,
-# 			gtcheck_err=GTCHECK_ERR,
-# 		),
+# # ###############################################################################
 
-rule bcftools_gtcheck_noerror:
-	input:
-		callgt="sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
-		callgtcsi="sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
-		truthgt="sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
-		truthgtcsi="sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
-	output:
-		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.txt",
-	params:
-		pvar=str(','.join([i+","+i for i in indv_names]))
-	log:
-		"sim/{simid}/logs/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.txt",
-	shell:
-		"""
-		({BCFTOOLS} gtcheck -u GT -p {params.pvar} -g {input.truthgt} {input.callgt} -e {wildcards.gtcheck_err} > {output})2>{log}
-		"""
+# # # # # #3
+# # 		expand(
+# # 			"sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
+# # 			simid=simulation_id,
+# # 			model_id=MODEL,
+# # 			contig=CONTIG,
+# # 			rep=REP,
+# # 			depth=DEPTH,
+# # 			error_rate=ERROR_RATE,
+# # 			qserr=QSERR,
+# # 		),
+
+# rule index_for_bcftools_gtcheck_truthgt:
+# 	input:
+# 		"sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
+# 	output:
+# 		"sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
+# 	shell:
+# 		"""
+# 		{BCFTOOLS} index {input};
+# 		"""
+
+
+# # ###############################################################################
+
+# # # # # #4
+# # 		expand(
+# # 			"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.txt",
+# # 			simid=simulation_id,
+# # 			model_id=MODEL,
+# # 			contig=CONTIG,
+# # 			rep=REP,
+# # 			depth=DEPTH,
+# # 			error_rate=ERROR_RATE,
+# # 			qserr=QSERR,
+# # 			gtcheck_err=GTCHECK_ERR,
+# # 		),
+
+# rule bcftools_gtcheck_noerror:
+# 	input:
+# 		callgt="sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
+# 		callgtcsi="sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
+# 		truthgt="sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
+# 		truthgtcsi="sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf.csi",
+# 	output:
+# 		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.txt",
+# 	params:
+# 		pvar=str(','.join([i+","+i for i in indv_names]))
+# 	log:
+# 		"sim/{simid}/logs/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.txt",
+# 	shell:
+# 		"""
+# 		({BCFTOOLS} gtcheck -u GT,GT -p {params.pvar} -g {input.truthgt} {input.callgt} -e {wildcards.gtcheck_err} > {output})2>{log}
+# 		"""
 
 
 # ###############################################################################
@@ -259,6 +269,18 @@ rule bcftools_gtcheck_noerror:
 
 
 
+# # # #7
+# 		expand(
+# 			simid=simulation_id,
+# 			model_id=MODEL,
+# 			contig=CONTIG,
+# 			rep=REP,
+# 			depth=DEPTH,
+# 			error_rate=ERROR_RATE,
+# 			qserr=QSERR,
+# 			sid=indv_names,
+# 		),
+
 # rule picard_get_genotype_concordance:
 # 	input:
 # 		truthgt="sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}-sample{sid}.vcf",
@@ -283,6 +305,19 @@ rule bcftools_gtcheck_noerror:
 # 		done
 # 		"""
 
+
+# # # #8
+# 		expand(
+# 			simid=simulation_id,
+# 			model_id=MODEL,
+# 			contig=CONTIG,
+# 			rep=REP,
+# 			depth=DEPTH,
+# 			error_rate=ERROR_RATE,
+# 			qserr=QSERR,
+# 			sid=indv_names,
+# 		),
+
 # rule merge_persample_picard_genotype_concordance:
 # 	input:
 # 		summary_metrics=expand("sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/picard_genotype_concordance/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}-sample{sid}.genotype_concordance_summary_metrics", sid=indv_names),
@@ -299,4 +334,33 @@ rule bcftools_gtcheck_noerror:
 # 		cat {input.genotype_concordance_detail_metrics} > {output.genotype_concordance_detail_metrics}
 # 		"""
 
+###############################################################################
 
+# # # #9
+# 		expand(
+# 		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.tsv",
+# 			simid=simulation_id,
+# 			model_id=MODEL,
+# 			contig=CONTIG,
+# 			rep=REP,
+# 			depth=DEPTH,
+# 			error_rate=ERROR_RATE,
+# 			qserr=QSERR,
+# 		),
+
+GET_GT_DISCORDANCE="/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/simulation/misc/get_genotype_discordance"
+
+rule get_genotype_discordance:
+	input:
+		truthgt="sim/{simid}/model_{model_id}/contig_{contig}/true_genotypes/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
+		callgt="sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
+	output:
+		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.tsv",
+	params:
+		pvar=str(','.join([i+","+i for i in indv_names])),
+	log:
+		"sim/{simid}/logs/model_{model_id}/contig_{contig}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.tsv",
+	shell:
+		"""
+		({GET_GT_DISCORDANCE} {input.truthgt} {input.callgt} > {output})2> {log}
+		"""

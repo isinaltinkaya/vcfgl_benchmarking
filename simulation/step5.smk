@@ -60,6 +60,22 @@ for i, (key, value) in enumerate(DEF_POPS.items()):
 rule all:
 	input:
 		# expand(
+		# 	"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}_tidy.tsv",
+		# 	simid=simulation_id,
+		# 	model_id=MODEL,
+		# 	contig=CONTIG,
+		# 	rep=REP,
+		# 	depth=DEPTH,
+		# 	error_rate=ERROR_RATE,
+		# 	qserr=QSERR,
+		# ),
+		expand(
+			"sim/{simid}/model_{model_id}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}.tsv",
+			simid=simulation_id,
+			model_id=MODEL,
+			gtcheck_err=GTCHECK_ERR,
+		)
+		# expand(
 		# 	"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}_tidy.tsv",
 		# 	simid=simulation_id,
 		# 	model_id=MODEL,
@@ -70,12 +86,12 @@ rule all:
 		# 	qserr=QSERR,
 		# 	gtcheck_err=GTCHECK_ERR,
 		# ),
-		expand(
-			"sim/{simid}/model_{model_id}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}.tsv",
-			simid=simulation_id,
-			model_id=MODEL,
-			gtcheck_err=GTCHECK_ERR,
-		)
+		# expand(
+		# 	"sim/{simid}/model_{model_id}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}.tsv",
+		# 	simid=simulation_id,
+		# 	model_id=MODEL,
+		# 	gtcheck_err=GTCHECK_ERR,
+		# )
 
 ###############################################################################
 
@@ -102,25 +118,87 @@ def get_qs_error(wildcards):
 	else:
 		return "0"
 
-rule tidy_bcftools_gtcheck:
+
+
+
+# rule tidy_bcftools_gtcheck:
+# 	input:
+# 		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.txt"
+# 	output:
+# 		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}_tidy.tsv",
+# 	params:
+# 		qs_error=get_qs_error
+# 	shell:
+# 		"""
+# 		nCompared=$(grep "^INFO" {input}|grep "sites-compared" |cut -f3)
+# 		nNoMatch=$(grep "^INFO" {input}|grep "sites-skipped-no-match" |cut -f3)
+# 		sitesUsedGTvsGT=$(grep "^INFO" {input}|grep "sites-used-GT-vs-GT" |cut -f3)
+
+# 		awk -v CONTIG={wildcards.contig} -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v ERRORRATE={wildcards.error_rate} -v QSERR={params.qs_error} -v NCOMPARED=${{nCompared}} -v NNOMATCH=${{nNoMatch}} -v SITESGTVSGT=${{sitesUsedGTvsGT}} 'BEGIN{{FS="\t";OFS="\t"}}{{if($1=="DC"){{print $2,$3,$4,$5,$6,CONTIG,REP,DEPTH,ERRORRATE,QSERR,NCOMPARED,NNOMATCH,SITESGTVSGT}}}}' {input} > {output}
+# 		"""
+
+
+# rule collect_bcftools_gtcheck:
+# 	input:
+# 		expand(
+# 			"sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{{gtcheck_err}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}_tidy.tsv",
+# 			contig=CONTIG,
+# 			rep=REP,
+# 			depth=DEPTH,
+# 			error_rate=ERROR_RATE,
+# 			qserr=QSERR,
+# 		),
+# 	output:
+# 		"sim/{simid}/model_{model_id}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}.tsv"
+# 	shell:
+# 		"""
+# 		cat {input} > {output}
+# 		"""
+
+
+###############################################################################
+
+
+
+		# expand(
+		# 	"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}_tidy.tsv",
+		# 	simid=simulation_id,
+		# 	model_id=MODEL,
+		# 	contig=CONTIG,
+		# 	rep=REP,
+		# 	depth=DEPTH,
+		# 	error_rate=ERROR_RATE,
+		# 	qserr=QSERR,
+		# ),
+
+
+rule tidy_get_genotype_concordance:
 	input:
-		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.txt"
+		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.tsv",
 	output:
-		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}_tidy.tsv",
+		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}_tidy.tsv",
 	params:
 		qs_error=get_qs_error
 	shell:
 		"""
-		nCompared=$(grep "^INFO" {input}|grep "sites-compared" |cut -f3)
-		nNoMatch=$(grep "^INFO" {input}|grep "sites-skipped-no-match" |cut -f3)
-
-		awk -v CONTIG={wildcards.contig} -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v ERRORRATE={wildcards.error_rate} -v QSERR={params.qs_error} -v NCOMPARED=${{nCompared}} -v NNOMATCH=${{nNoMatch}} 'BEGIN{{FS="\t";OFS="\t"}}{{if($1=="DC"){{print $4,$5,$6,CONTIG,REP,DEPTH,ERRORRATE,QSERR,NCOMPARED,NNOMATCH}}}}' {input} > {output}
+		awk -v CONTIG={wildcards.contig} -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v ERRORRATE={wildcards.error_rate} -v QSERR={params.qs_error} 'BEGIN{{FS="\t";OFS="\t"}}{{print $0,CONTIG,REP,DEPTH,ERRORRATE,QSERR
+		}}' {input} > {output}
 		"""
 
-rule collect_bcftools_gtcheck:
+
+
+
+		# expand(
+		# 	"sim/{simid}/model_{model_id}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}.tsv",
+		# 	simid=simulation_id,
+		# 	model_id=MODEL,
+		# 	gtcheck_err=GTCHECK_ERR,
+		# )
+
+rule collect_get_genotype_concordance:
 	input:
 		expand(
-			"sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/bcftools_gtcheck_e{{gtcheck_err}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}_tidy.tsv",
+			"sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/get_genotype_discordance/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}_tidy.tsv",
 			contig=CONTIG,
 			rep=REP,
 			depth=DEPTH,
@@ -128,8 +206,11 @@ rule collect_bcftools_gtcheck:
 			qserr=QSERR,
 		),
 	output:
-		"sim/{simid}/model_{model_id}/gc_evaluation/bcftools_gtcheck_e{gtcheck_err}/{simid}-{model_id}.tsv"
+		"sim/{simid}/model_{model_id}/gc_evaluation/get_genotype_discordance/{simid}-{model_id}.tsv"
 	shell:
 		"""
 		cat {input} > {output}
 		"""
+
+
+

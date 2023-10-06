@@ -5,20 +5,43 @@ library(dplyr)
 
 
 
-d<-read.csv("~/Mount/vcfgl/vcfgl_paper_analyses/simulation/sim/sim_vcfgl_2310/model_OutOfAfrica_3G09/gc_evaluation/bcftools_gtcheck_e0/sim_vcfgl_2310-OutOfAfrica_3G09.tsv",sep="\t",header=F)
+d<-read.csv("~/Mount/vcfgl/vcfgl_paper_analyses/simulation/sim/sim_vcfgl_2310/model_OutOfAfrica_3G09/gc_evaluation/get_genotype_discordance/sim_vcfgl_2310-OutOfAfrica_3G09.tsv",sep="\t",header=F)
 
 
-colnames(d)<-c("nDiscordantSites","HWE","nSites","Contig","Rep","Depth","ErrorRate","QsError","nSitesCompared","nSitesNoMatch")
+colnames(d)<-c("Sample","nSitesTotal","nSitesRetained","nSitesCompared","nSitesCallMis","nDiscordantSites","nNonDiscordantSites","MissingnessRate","DiscordanceRate","ConcordanceRate","Contig","Rep","Depth","ErrorRate","QsError")
 
 d$Rep <- as.factor(d$Rep)
 d$Depth <- as.factor(d$Depth)
-d$DiscordanceRate <- d$nDiscordantSites/d$nSites
-d$MissingnessRate <- 1-(d$nSites/d$nSitesCompared)
 d$BetaVariance <- 10^d$QsError
 d$BetaMean <- d$ErrorRate
 d$QsError <- as.factor(d$QsError)
 
-d2<-d%>%group_by(Depth,BetaVariance,BetaMean,QsError)%>%summarise_at(vars(DiscordanceRate),list(mean_DiscordanceRate=mean))
+
+
+#####################
+
+# bcftools gtcheck
+
+# colnames(d)<-c("nDiscordantSites","HWE","nSites","Contig","Rep","Depth","ErrorRate","QsError","nSitesCompared","nSitesNoMatch")
+
+# d$Rep <- as.factor(d$Rep)
+# d$Depth <- as.factor(d$Depth)
+# d$DiscordanceRate <- d$nDiscordantSites/d$nSites
+# d$MissingnessRate <- 1-(d$nSites/d$nSitesCompared)
+# d$BetaVariance <- 10^d$QsError
+# d$BetaMean <- d$ErrorRate
+# d$QsError <- as.factor(d$QsError)
+
+# p<-ggplot(d, aes(x = Depth, y = DiscordanceRate, colour = QsError)) +
+# # geom_boxplot(notch = FALSE) +
+# geom_point()+
+# facet_wrap( Rep ~ . ) +
+# theme_bw()
+
+# p
+
+
+# d2<-d%>%group_by(Depth,BetaVariance,BetaMean,QsError)%>%summarise_at(vars(DiscordanceRate),list(mean_DiscordanceRate=mean))
 
 
 # p <- ggplot(d, aes(x = Depth, y = DiscordanceRate, colour = QsError)) +

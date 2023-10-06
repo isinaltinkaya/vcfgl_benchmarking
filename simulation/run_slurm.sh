@@ -13,10 +13,11 @@ echo "{
 		\"name\" : \"PROJECT_${projectID}-RULE_{rule}-JOB_{jobid}\",
 		\"logfile\": \"${logdir}/smk_{rule}_%j.out\",
 		\"errfile\": \"${logdir}/smk_{rule}_%j.err\",
-		\"time\": \"1-03:00:00\"
+		\"time\": \"13:00:00\"
 	}
 }" > ${configFile}
 
+# \"time\": \"1-03:00:00\"
 
 mkdir -pv ${logdir}
 

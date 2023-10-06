@@ -10,7 +10,7 @@ simulation_id: "sim_vcfgl_2310"
 
 # average per site depth
 # depth: ["inf", 100, 20 , 10, 2, 1, 0.5, 0.1]
-depth: [20 , 10, 2, 1, 0.5, 0.1]
+depth: [100, 20 , 10, 2, 1, 0.5, 0.1]
 
 model: "OutOfAfrica_3G09"
 
