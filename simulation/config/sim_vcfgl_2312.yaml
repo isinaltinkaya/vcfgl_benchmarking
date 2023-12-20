@@ -1,16 +1,15 @@
 
 tools:
-    vcfgl: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/vcfgl/vcfgl"
+    vcfgl: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/vcfgl_231218/vcfgl/vcfgl"
     picardjar: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/picard.jar"
     bcftools: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/bcftools-1.18/bcftools"
     angsd: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/angsd/angsd"
     gtDiscordance: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/vcfgl/misc/gtDiscordance"
 
-simulation_id: "sim_vcfgl_2310"
+simulation_id: "sim_vcfgl_2312"
 
 # average per site depth
-# depth: ["inf", 100, 20 , 10, 2, 1, 0.5, 0.1]
-depth: [100, 20 , 10, 2, 1, 0.5, 0.1]
+depth: [20 , 10, 2, 1, 0.5, 0.1]
 
 model: "OutOfAfrica_3G09"
 
@@ -37,13 +36,13 @@ beta_variance_values_neg_e: [5, 6, 7]
 # bcftools call -m  
 # ----------------
 # file for --group-samples Group samples by population (file with "sample\tgroup")
-# sample_groups_tsv: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/simulation/sim/sim_vcfgl_2310/sim_vcfgl_2310_samples_pops.tsv"
+# sample_groups_tsv: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/simulation/sim/sim_vcfgl_2312/sim_vcfgl_2312_samples_pops.tsv"
 
 bcftools_call_m_prior: 0.0011 #default
 
 perpop_inds_list:
     YRI:
-        "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/simulation/sim/sim_vcfgl_2310/sim_vcfgl_2310_YRI_indlist"
+        "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/simulation/sim/sim_vcfgl_2312/sim_vcfgl_2312_YRI_indlist"
     CEU:
-        "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/simulation/sim/sim_vcfgl_2310/sim_vcfgl_2310_CEU_indlist"
+        "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/simulation/sim/sim_vcfgl_2312/sim_vcfgl_2312_CEU_indlist"
 

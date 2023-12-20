@@ -5,7 +5,7 @@
 ###############################################################################
 #
 # Naming convention:
-# - log files: 
+# - log files:
 # output: sim/{simid}/REST_OF_PATH.EXTENSION
 # params.prefix: sim/{simid}/REST_OF_PATH
 # log: sim/{simid}/logs/REST_OF_PATH.EXTENSION
@@ -13,65 +13,87 @@
 import stdpopsim, msprime, tskit
 import numpy as np
 
-simulation_id= "sim_vcfgl_2310"
-configfile: "config/"+simulation_id+".yaml"
+simulation_id = "sim_vcfgl_2312"
 
-MODEL=config['model']
-ERROR_RATE=config['vcfgl_error_rate']
-DEPTH=config['depth']
-CONTIG=config['contig']
-REP = [*range(config['n_reps'])]
 
-BETA_VARS=config['beta_variance_values_neg_e']
-QSERR=['1_betavar'+str(x) for x in BETA_VARS]
+configfile: "config/" + simulation_id + ".yaml"
 
-VCFGL=config['tools']['vcfgl']
+
+MODEL = config["model"]
+ERROR_RATE = config["vcfgl_error_rate"]
+DEPTH = config["depth"]
+CONTIG = config["contig"]
+REP = [*range(config["n_reps"])]
+
+BETA_VARS = config["beta_variance_values_neg_e"]
+QSERR = ["2_" + str(x) for x in BETA_VARS]
+
+VCFGL = config["tools"]["vcfgl"]
 
 ###############################################################################
 # BEGIN RULES
 
+
+GLMODELS = [1, 2]
+
+
 rule all:
-	input:
-		expand(
-			"sim/{simid}/model_{model_id}/contig_{contig}/vcfgl/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf",
-				simid=simulation_id,
-				model_id=MODEL,
-				contig=CONTIG,
-				rep=REP,
-				depth=DEPTH,
-				error_rate=ERROR_RATE,
-				qserr=QSERR,
-				),
+    input:
+        expand(
+            "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qserr}.bcf",
+            simid=simulation_id,
+            model_id=MODEL,
+            contig=CONTIG,
+            rep=REP,
+            depth=DEPTH,
+            error_rate=ERROR_RATE,
+            qserr=["0_0", "2_5", "2_6", "2_7"],
+            glModel=1,
+        ),
+
+
+def get_error_params(wildcards):
+    if wildcards.qserr == "0_0":
+        return " --error-qs 0 "
+    else:
+        return str(
+            " --error-qs "
+            + wildcards.qserr.split("_")[0]
+            + " --beta-variance 1e-"
+            + wildcards.qserr.split("_")[1]
+        )
 
 
 rule simulate_vcfgl_var_qs_error:
-	input:
-		"sim/{simid}/model_{model_id}/contig_{contig}/vcf/{simid}-{model_id}-{contig}-rep{rep}.vcf"
-	output:
-		"sim/{simid}/model_{model_id}/contig_{contig}/vcfgl/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf"
-	params:
-		prefix="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}",
-		random_seed=lambda wildcards: str(int(wildcards.rep)+1),
-		error_qs=lambda wildcards: str(wildcards.qserr).split('_')[0],
-		beta_var=lambda wildcards: str(wildcards.qserr).split('_')[1][7],
-	log:
-		"sim/{simid}/logs/model_{model_id}/contig_{contig}/vcfgl/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}.bcf"
-	shell:
-		"""
-		({VCFGL} -i {input} \
-				-o {params.prefix} \
-				-O b \
-				--depth {wildcards.depth} \
-				--error-rate {wildcards.error_rate}  \
-				--error-qs {params.error_qs} \
-				--beta-variance 1e-{params.beta_var} \
-				-addQS 1 \
-				-explode 0 \
-				-addFormatAD 1 \
-				-addFormatDP 1 \
-				-addInfoAD 1 \
-				-addPL 1 \
-				-addGP 1 \
-				--seed {params.random_seed} ) 2> {log}
-		"""
-
+    input:
+        "sim/{simid}/model_{model_id}/contig_{contig}/vcf/{simid}-{model_id}-{contig}.vcf",
+    output:
+        "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qserr}.bcf",
+    params:
+        prefix="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qserr}",
+        random_seed=lambda wildcards: str(int(wildcards.rep) + 1),
+        errparam=get_error_params,
+    log:
+        "sim/{simid}/logs/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qserr}.bcf",
+    shell:
+        """
+        ({VCFGL} -i {input} \
+                -o {params.prefix} \
+                -O b \
+                --depth {wildcards.depth} \
+                --error-rate {wildcards.error_rate}  \
+                {params.errparam} \
+                -addQS 1 \
+                -explode 0 \
+                -addInfoAD 1 \
+                -addFormatAD 1 \
+                -addFormatDP 1 \
+                -addPL 1 \
+                -GL {wildcards.glModel} \
+                -printTruth 1 \
+                -printPileup 1 \
+                --rm-invar-sites 3 \
+                --rm-empty-sites 1 \
+                -doUnobserved 1 \
+                --seed {params.random_seed} ) 2> {log}
+        """
