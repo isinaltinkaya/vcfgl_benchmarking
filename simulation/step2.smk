@@ -26,7 +26,7 @@ CONTIG = config["contig"]
 REP = [*range(config["n_reps"])]
 
 BETA_VARS = config["beta_variance_values_neg_e"]
-QSERR = ["2_" + str(x) for x in BETA_VARS]
+qsbeta = ["2_" + str(x) for x in BETA_VARS]
 
 VCFGL = config["tools"]["vcfgl"]
 
@@ -40,27 +40,27 @@ GLMODELS = [1, 2]
 rule all:
     input:
         expand(
-            "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qserr}.bcf",
+            "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
             simid=simulation_id,
             model_id=MODEL,
             contig=CONTIG,
             rep=REP,
             depth=DEPTH,
             error_rate=ERROR_RATE,
-            qserr=["0_0", "2_5", "2_6", "2_7"],
+            qsbeta=["0_0", "2_5", "2_6", "2_7"],
             glModel=1,
         ),
 
 
 def get_error_params(wildcards):
-    if wildcards.qserr == "0_0":
+    if wildcards.qsbeta == "0_0":
         return " --error-qs 0 "
     else:
         return str(
             " --error-qs "
-            + wildcards.qserr.split("_")[0]
+            + wildcards.qsbeta.split("_")[0]
             + " --beta-variance 1e-"
-            + wildcards.qserr.split("_")[1]
+            + wildcards.qsbeta.split("_")[1]
         )
 
 
@@ -68,13 +68,13 @@ rule simulate_vcfgl_var_qs_error:
     input:
         "sim/{simid}/model_{model_id}/contig_{contig}/vcf/{simid}-{model_id}-{contig}.vcf",
     output:
-        "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qserr}.bcf",
+        "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
     params:
-        prefix="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qserr}",
+        prefix="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}",
         random_seed=lambda wildcards: str(int(wildcards.rep) + 1),
         errparam=get_error_params,
     log:
-        "sim/{simid}/logs/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qserr}.bcf",
+        "sim/{simid}/logs/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
     shell:
         """
         ({VCFGL} -i {input} \

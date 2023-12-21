@@ -8,5 +8,7 @@ angsdput*
 
 first_ibd_sim_test/
 .nfs*
-.Rdata
+.RData
 .Rhistory
+
+*cluster_config.yaml

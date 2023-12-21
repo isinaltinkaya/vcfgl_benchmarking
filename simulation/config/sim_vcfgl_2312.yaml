@@ -1,6 +1,6 @@
 
 tools:
-    vcfgl: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/vcfgl_231218/vcfgl/vcfgl"
+    vcfgl: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/vcfgl/vcfgl"
     picardjar: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/picard.jar"
     bcftools: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/bcftools-1.18/bcftools"
     angsd: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/angsd/angsd"

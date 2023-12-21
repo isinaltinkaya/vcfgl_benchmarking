@@ -66,52 +66,52 @@ GLMODELS = [1, 2]
 
 rule all:
     input:
-        expand(
-            "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_qs_doGQ3_gl{glModel}/{simid}-{model_id}-{gc_method}.tsv",
-            simid=simulation_id,
-            model_id=MODEL,
-            gc_method=GC_METHODS,
-            glModel=GLMODELS,
-        ),
-        expand(
-            "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qserr}-snp_doGQ3_qs_tidy.tsv",
-            simid=simulation_id,
-            model_id=MODEL,
-            contig=CONTIG,
-            rep=REP,
-            depth=DEPTH,
-            error_rate=ERROR_RATE,
-            gc_method=GC_METHODS,
-            qserr=["0_0", "2_5", "2_6", "2_7"],
-            glModel=GLMODELS,
-        ),
+    # TODO doGQ 5 persample info
+#         expand(
+#             "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_qs_doGQ3_gl{glModel}/{simid}-{model_id}-{gc_method}.tsv",
+#             simid=simulation_id,
+#             model_id=MODEL,
+#             gc_method=GC_METHODS,
+#             glModel=GLMODELS,
+#         ),
+#         expand(
+#             "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ3_qs_tidy.tsv",
+#             simid=simulation_id,
+#             model_id=MODEL,
+#             contig=CONTIG,
+#             rep=REP,
+#             depth=DEPTH,
+#             error_rate=ERROR_RATE,
+#             gc_method=GC_METHODS,
+#             qsbeta=["0_0", "2_5", "2_6", "2_7"],
+#             glModel=GLMODELS,
+#         ),
 
 
-rule tidy_get_genotype_discordance_doGQ3:
-    input:
-        "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betavar}-snp_doGQ3_qs.tsv",
-    output:
-        "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betavar}-snp_doGQ3_qs_tidy.tsv",
-    shell:
-        """
-        awk -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v QSVAL={wildcards.qsval} -v BETAVAR={wildcards.betavar} 'BEGIN{{FS="\t";OFS="\t"}}{{print $0,REP,DEPTH,QSVAL,BETAVAR}}' {input} > {output}
-        """
+# rule tidy_get_genotype_discordance_doGQ3:
+#     input:
+#         "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betavar}-snp_doGQ3_qs.tsv",
+#     output:
+#         "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betavar}-snp_doGQ3_qs_tidy.tsv",
+#     shell:
+#         """
+#         awk -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v QSVAL={wildcards.qsval} -v BETAVAR={wildcards.betavar} 'BEGIN{{FS="\t";OFS="\t"}}{{print $0,REP,DEPTH,QSVAL,BETAVAR}}' {input} > {output}
+#         """
 
 
-rule collect_get_genotype_discordance_qs_doGQ3:
-    input:
-        expand(
-            "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/genotype_discordance/{{gc_method}}_gl{{glModel}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ3_qs_tidy.tsv",
-            contig=CONTIG,
-            depth=DEPTH,
-            rep=REP,
-            error_rate=ERROR_RATE,
-            betavar=BETA_VARS,
-            qsbeta=["0_0", "2_5", "2_6", "2_7"],
-        ),
-    output:
-        "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_qs_doGQ3_gl{glModel}/{simid}-{model_id}-{gc_method}.tsv",
-    shell:
-        """
-        cat {input} > {output}
-        """
+# rule collect_get_genotype_discordance_qs_doGQ3:
+#     input:
+#         expand(
+#             "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/genotype_discordance/{{gc_method}}_gl{{glModel}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ3_qs_tidy.tsv",
+#             contig=CONTIG,
+#             depth=DEPTH,
+#             rep=REP,
+#             error_rate=ERROR_RATE,
+#             qsbeta=["0_0", "2_5", "2_6", "2_7"],
+#         ),
+#     output:
+#         "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_qs_doGQ3_gl{glModel}/{simid}-{model_id}-{gc_method}.tsv",
+#     shell:
+#         """
+#         cat {input} > {output}
+#         """

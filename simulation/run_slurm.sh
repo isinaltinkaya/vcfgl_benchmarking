@@ -13,7 +13,7 @@ echo "{
 		\"name\" : \"PROJECT_${projectID}-RULE_{rule}-JOB_{jobid}\",
 		\"logfile\": \"${logdir}/smk_{rule}_%j.out\",
 		\"errfile\": \"${logdir}/smk_{rule}_%j.err\",
-		\"time\": \"5:00:00\"
+		\"time\": \"00:10:00\"
 	}
 }" > ${configFile}
 
@@ -37,7 +37,10 @@ snakemake --cluster-config ${configFile} \
 	--jobs 5000 \
 	--nolock \
 	--latency-wait 60 \
+	--immediate-submit \
 	--rerun-incomplete \
+	--rerun-triggers mtime \
+	--notemp \
 	-s "${@}"
 
 #231002/10:48 disabled this for now to see if slurm can work with multiple run alls when this is disabled. enabled: it cant
