@@ -13,10 +13,10 @@
 import stdpopsim, msprime, tskit
 import numpy as np
 
-simulation_id = "sim_vcfgl_2312"
 
 
-configfile: "config/" + simulation_id + ".yaml"
+
+simulation_id = config["simulation_id"]
 
 
 MODEL = config["model"]

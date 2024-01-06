@@ -10,9 +10,8 @@
 # params.prefix: sim/{simid}/REST_OF_PATH
 # log: sim/{simid}/logs/REST_OF_PATH.EXTENSION
 
-simulation_id = "sim_vcfgl_2312"
+simulation_id = config["simulation_id"]
 
-configfile: "config/" + simulation_id + ".yaml"
 
 BCFTOOLS = config["tools"]["bcftools"]
 
@@ -21,6 +20,7 @@ ERROR_RATE = config["vcfgl_error_rate"]
 DEPTH = config["depth"]
 CONTIG = config["contig"]
 REP = [*range(config["n_reps"])]
+
 BETA_VARS = config["beta_variance_values_neg_e"]
 
 GTCHECK_ERR = config["bcftools_gtcheck_error"]
@@ -46,7 +46,6 @@ MINGQ = 20
 
 GET_GT_DISCORDANCE = config["tools"]["gtDiscordance"]
 
-GLMODELS = [1, 2]
 
 ###############################################################################
 # BEGIN RULES
@@ -54,18 +53,18 @@ GLMODELS = [1, 2]
 
 rule all:
 	input:
-		# expand("sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{dogq}.tsv",
-				# simid=simulation_id,
-				# model_id=MODEL,
-				# contig=CONTIG,
-				# rep=REP,
-				# depth=DEPTH,
-				# error_rate=ERROR_RATE,
-				# gc_method=GC_METHODS,
-				# betavar=BETA_VARS,
-				# qsbeta=["0_0", "2_5", "2_6"],
-				# dogq=5,
-				# glModel=[1,2]),
+		expand("sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{dogq}.tsv",
+				simid=simulation_id,
+				model_id=MODEL,
+				contig=CONTIG,
+				rep=REP,
+				depth=DEPTH,
+				error_rate=ERROR_RATE,
+				gc_method=GC_METHODS,
+				betavar=BETA_VARS,
+				qsbeta=["0_0", "2_5", "2_6"],
+				glSpecs=["precise1_gl2", "gl1", "gl2"],
+				dogq=[5,6]),
 		 expand("sim/{simid}/model_{model_id}/stats/nSites_non0dp/{simid}-{model_id}_nSitesNon0DP.csv",
 				simid=simulation_id,
 				model_id=MODEL)
@@ -73,12 +72,12 @@ rule all:
 
 rule get_genotype_discordance_doGQ:
 	input:
-		truthgt="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.truth.bcf",
-		callgt="sim/{simid}/model_{model_id}/contig_{contig}/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp.bcf",
+		truthgt="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.truth.bcf",
+		callgt="sim/{simid}/model_{model_id}/contig_{contig}/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp.bcf",
 	output:
-		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{dogq}.tsv",
+		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{dogq}.tsv",
 	log:
-		"sim/{simid}/logs/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{dogq}.tsv",
+		"sim/{simid}/logs/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{dogq}.tsv",
 	shell:
 		"""
 		({GET_GT_DISCORDANCE} -t {input.truthgt} -i {input.callgt} -o {output} -doGQ {wildcards.dogq} ) 2> {log}

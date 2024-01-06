@@ -13,10 +13,9 @@
 import stdpopsim, msprime, tskit
 import numpy as np
 
-simulation_id = "sim_vcfgl_2312"
+simulation_id = config["simulation_id"]
 
 
-configfile: "config/" + simulation_id + ".yaml"
 
 MODEL = config["model"]
 ERROR_RATE = config["vcfgl_error_rate"]
@@ -45,13 +44,11 @@ for i, (key, value) in enumerate(DEF_POPS.items()):
 
 GC_METHODS = ["genotype_calling", "genotype_calling_perpop"]
 
-GLMODELS = [1, 2]
-
 
 rule all:
     input:
         expand(
-            "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{dogq}.tsv.tidy",
+            "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{dogq}.tsv.tidy",
             simid=simulation_id,
             model_id=MODEL,
             contig=CONTIG,
@@ -59,12 +56,12 @@ rule all:
             depth=DEPTH,
             error_rate=ERROR_RATE,
             gc_method=GC_METHODS,
-            dogq=5,
-            glModel=GLMODELS,
+            dogq=[5,6],
+            glSpecs=["precise1_gl2", "gl1", "gl2"],
             qsbeta=["0_0", "2_5", "2_6"],
         ),
         expand(
-			"sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glModel}/{simid}-{model_id}-{gc_method}-doGQ{dogq}.tsv",
+            "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-{gc_method}-doGQ{dogq}.tsv",
             simid=simulation_id,
             model_id=MODEL,
             contig=CONTIG,
@@ -72,16 +69,17 @@ rule all:
             depth=DEPTH,
             error_rate=ERROR_RATE,
             gc_method=GC_METHODS,
-            dogq=5,
-            glModel=GLMODELS,
+            dogq=[5,6],
+            glSpecs=["precise1_gl2", "gl1", "gl2"],
         ),
+
 
 
 rule tidy_get_genotype_discordance_doGQ:
     input:
-        "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}-snp_doGQ{dogq}.tsv",
+        "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}-snp_doGQ{dogq}.tsv",
     output:
-        "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}-snp_doGQ{dogq}.tsv.tidy",
+        "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}-snp_doGQ{dogq}.tsv.tidy",
     shell:
         """
         awk -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v BETAVAL={wildcards.betaval} 'BEGIN{{FS="\t";OFS="\t"}}{{print $0,REP,DEPTH,BETAVAL}}' {input} > {output}
@@ -91,7 +89,7 @@ rule tidy_get_genotype_discordance_doGQ:
 rule collect_get_genotype_discordance_qs_doGQ:
     input:
         expand(
-            "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/genotype_discordance/{{gc_method}}_gl{{glModel}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{{dogq}}.tsv.tidy",
+            "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/genotype_discordance/{{gc_method}}_{{glSpecs}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{{dogq}}.tsv.tidy",
             contig=CONTIG,
             depth=DEPTH,
             rep=REP,
@@ -99,8 +97,10 @@ rule collect_get_genotype_discordance_qs_doGQ:
             qsbeta=["0_0", "2_5", "2_6"],
         ),
     output:
-        "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glModel}/{simid}-{model_id}-{gc_method}-doGQ{dogq}.tsv",
+        "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-{gc_method}-doGQ{dogq}.tsv",
     shell:
         """
         cat {input} > {output}
         """
+
+
