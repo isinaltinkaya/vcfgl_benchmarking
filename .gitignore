@@ -13,3 +13,21 @@ first_ibd_sim_test/
 
 *cluster_config.yaml
 *plots_*
+
+*.RData
+
+benchmarking/*.log
+benchmarking/*.arg
+benchmarking/*.bcf
+benchmarking/time*
+
+benchmarking/*/*.log
+benchmarking/*/*.arg
+benchmarking/*/*.bcf
+benchmarking/*/time*
+
+plots/*/qscores*
+plots/*/*.log
+plots/*/*.arg
+plots/*/*.bcf
+
