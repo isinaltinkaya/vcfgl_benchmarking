@@ -31,3 +31,4 @@ plots/*/*.log
 plots/*/*.arg
 plots/*/*.bcf
 
+benchmarking/benchmarking_24/sim_vcfgl_2312-OutOfAfrica_3G09-chr22.vcf
