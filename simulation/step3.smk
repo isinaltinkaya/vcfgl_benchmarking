@@ -122,7 +122,7 @@ rule all:
 #         "sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling_perpop_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp.bcf",
 #     params:
 #         prior=config["bcftools_call_m_prior"],
-#         popinds_list="sim/sim_vcfgl_2312/sim_vcfgl_2312_samples_pops.tsv",
+#         popinds_list = config["pop_inds_list"],
 #     log:
 #         "sim/{simid}/logs/model_{model_id}/contig_{contig}/genotype_calling_perpop_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp.bcf",
 #     shell:
@@ -159,7 +159,7 @@ rule all:
 #         "sim/{simid}/model_{model_id}/contig_{contig}/genotype_calling_perpop_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}.bcf",
 #     params:
 #         prior=config["bcftools_call_m_prior"],
-#         popinds_list="sim/sim_vcfgl_2312/sim_vcfgl_2312_samples_pops.tsv",
+#         popinds_list = config["pop_inds_list"],
 #     log:
 #         "sim/{simid}/logs/model_{model_id}/contig_{contig}/genotype_calling_perpop_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}.bcf",
 #     shell:

@@ -14,8 +14,6 @@ import stdpopsim, msprime, tskit
 import numpy as np
 
 
-
-
 simulation_id = config["simulation_id"]
 
 
@@ -105,3 +103,13 @@ rule tree_to_vcf:
                 position_transform="legacy",
                 individual_names=indv_names,
             )
+
+
+# TODO
+rule print_pop_inds_list:
+    output:
+        config["pop_inds_list"],
+    run:
+        with open(output[0], "w") as pop_inds_list:
+            for i, indv in enumerate(indv_names):
+                print(indv + "\tpop" + str(i // ploidy + 1), file=pop_inds_list)

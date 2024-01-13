@@ -6,7 +6,7 @@ tools:
     angsd: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/angsd/angsd"
     gtDiscordance: "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/tools/vcfgl/misc/gtDiscordance"
 
-simulation_id: "sim_vcfgl_2312"
+simulation_id: "sim_vcfgl_2401"
 
 # average per site depth
 depth: [20 , 10, 2, 1, 0.5, 0.1]
