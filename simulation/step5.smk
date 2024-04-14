@@ -19,11 +19,16 @@ DEPTH = config["depth"]
 CONTIG = config["contig"]
 REP = [*range(config["n_reps"])]
 
-GC_METHODS = ["genotype_calling", "genotype_calling_perpop"]
-
 QSBETAS = ["0_0", "2_5", "2_6", "2_7"]
-GLSPECS = ["gl1", "gl2", "precise1_gl2"]
+VCFGLPARS = ["gl1", "gl2", "precise1_gl2", "platform1_gl1", "platform1_gl2"]
 
+BCFTOOLS_MCALL_PRIOR = list(config["bcftools_mcall_prior"].keys())
+
+GC_METHODS = [
+    f"{mode}{mcallPriorID}"
+    for mode in ["mcall_all_prior", "mcall_perpop_prior"]
+    for mcallPriorID in BCFTOOLS_MCALL_PRIOR
+] + ["hardcall"]
 
 ###############################################################################
 # BEGIN RULES
@@ -32,207 +37,218 @@ GLSPECS = ["gl1", "gl2", "precise1_gl2"]
 rule all:
     input:
         expand(
-			"sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-{gc_method}.tsv",
-			# "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp.tsv.tidy",
-            qsbeta=["0_0", "2_5", "2_6", "2_7"],
-            # "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-{gc_method}.tsv",
+            "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-gcMethod{gc_method}-sumSamples_meanReps_all.RData",
             simid=simulation_id,
             model_id=MODEL,
-            contig=CONTIG,
-            rep=REP,
-            depth=DEPTH,
-            error_rate=ERROR_RATE,
-			gc_method=GC_METHODS,
-            glSpecs=GLSPECS,
+            gc_method=GC_METHODS,
         ),
         # expand(
-			# "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp.tsv.tidy",
-            # qsbeta=["0_0", "2_5", "2_6", "2_7"],
-            # simid=simulation_id,
-            # model_id=MODEL,
-            # contig=CONTIG,
-            # rep=REP,
-            # depth=DEPTH,
-            # error_rate=ERROR_RATE,
-			# gc_method=GC_METHODS,
-            # glSpecs=GLSPECS,
-        # ),
-        # expand(
-            # "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-hard_genotype_calling.tsv",
-            # simid=simulation_id,
-            # model_id=MODEL,
-            # contig=CONTIG,
-            # rep=REP,
-            # depth=DEPTH,
-            # error_rate=ERROR_RATE,
-            # glSpecs=GLSPECS,
-        # ),
-        # expand(
-        #     "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-{gc_method}-doGQ7.tsv",
+        #     "sim/{simid}/model_{model_id}/contig_{contig}/gt_discordance/gcMethod_{gc_method}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}-gcMethod_{gc_method}.tidy.tsv",
         #     simid=simulation_id,
         #     model_id=MODEL,
         #     contig=CONTIG,
         #     rep=REP,
         #     depth=DEPTH,
         #     error_rate=ERROR_RATE,
+        #     vcfgl_qsbeta=["00", "25", "26", "27"],
+        #     vcfgl_gl=["1", "2", "2p"],
+        #     vcfgl_platform=[0, 1],
         #     gc_method=GC_METHODS,
-        #     glSpecs=GLSPECS,
         # ),
         # expand(
-        # "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-{gc_method}-doGQ{dogq}.tsv",
-        # simid=simulation_id,
-        # model_id=MODEL,
-        # contig=CONTIG,
-        # rep=REP,
-        # depth=DEPTH,
-        # error_rate=ERROR_RATE,
-        # gc_method=GC_METHODS,
-        # dogq=[6],
-        # glSpecs=["precise1_gl2", "gl1", "gl2"],
+        #     "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-{gc_method}.tsv",
+        #     simid=simulation_id,
+        #     model_id=MODEL,
+        #     contig=CONTIG,
+        #     rep=REP,
+        #     depth=DEPTH,
+        #     error_rate=ERROR_RATE,
+        #     vcfgl_qsbeta=["00", "25", "26", "27"],
+        #     vcfgl_gl=["1", "2", "2p"],
+        #     vcfgl_platform=[0, 1],
+        #     gc_method=GC_METHODS,
         # ),
-
-
-
-rule tidy_get_genotype_discordance_snp:
-	input:
-		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}-snp.tsv",
-	output:
-		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}-snp.tsv.tidy",
-	shell:
-		"""
-		awk -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v BETAVAL={wildcards.betaval} 'BEGIN{{FS="\t";OFS="\t"}}{{print $0,REP,DEPTH,BETAVAL}}' {input} > {output}
-		"""
-
-
-rule collect_get_genotype_discordance_qs_snp:
-	input:
-		expand(
-			"sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/genotype_discordance/{{gc_method}}_{{glSpecs}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp.tsv.tidy",
-			contig=CONTIG,
-			depth=DEPTH,
-			rep=REP,
-			error_rate=ERROR_RATE,
-			qsbeta=["0_0", "2_5", "2_6", "2_7"],
-		),
-	output:
-		"sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-{gc_method}-snp.tsv"
-	shell:
-		"""
-		cat {input} > {output}
-		"""
-
-
-rule tidy_get_genotype_discordance:
-	input:
-		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}.tsv",
-	output:
-		"sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}.tsv.tidy",
-	shell:
-		"""
-		awk -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v BETAVAL={wildcards.betaval} 'BEGIN{{FS="\t";OFS="\t"}}{{print $0,REP,DEPTH,BETAVAL}}' {input} > {output}
-		"""
-
-
-rule collect_get_genotype_discordance_qs:
-	input:
-		expand(
-			"sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/genotype_discordance/{{gc_method}}_{{glSpecs}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}.tsv.tidy",
-			contig=CONTIG,
-			depth=DEPTH,
-			rep=REP,
-			error_rate=ERROR_RATE,
-			qsbeta=["0_0", "2_5", "2_6", "2_7"],
-		),
-	output:
-		"sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-{gc_method}.tsv"
-	shell:
-		"""
-		cat {input} > {output}
-		"""
-
-
-# rule tidy_get_genotype_discordance_hardcall:
-    # input:
-        # "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/hard_genotype_calling_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}.tsv",
-    # output:
-        # "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/hard_genotype_calling_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}.tsv.tidy",
-    # shell:
-        # """
-        # awk -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v BETAVAL={wildcards.betaval} 'BEGIN{{FS="\t";OFS="\t"}}{{print $0,REP,DEPTH,BETAVAL}}' {input} > {output}
-        # """
-#
-#
-# rule collect_get_genotype_discordance_qs_hardcall:
-    # input:
         # expand(
-            # "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/genotype_discordance/hard_genotype_calling_{{glSpecs}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}.tsv.tidy",
-            # contig=CONTIG,
-            # depth=DEPTH,
-            # rep=REP,
-            # error_rate=ERROR_RATE,
-            # qsbeta=["0_0", "2_5", "2_6", "2_7"],
+        #     "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-gcMethod{gc_method}-compare_gl12_platform0_qsbeta0567.RData",
+        #     simid=simulation_id,
+        #     model_id=MODEL,
+        #     gc_method=GC_METHODS,
         # ),
-    # output:
-        # "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-hard_genotype_calling.tsv",
-    # shell:
-        # """
-        # cat {input} > {output}
-        # """
-#
-#
+        # expand(
+        #     "sim/{simid}/model_{model_id}/stats/nSNPs/{simid}-{model_id}-{gc_method}-nSNPs.tsv",
+        #     simid=simulation_id,
+        #     model_id=MODEL,
+        #     gc_method=GC_METHODS,
+        # ),
+        # expand(
+        #     "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-gcMethod{gc_method}-compare_gl12_platform0_qsbeta0567-R_sumSamplesReps.RData",
+        #     simid=simulation_id,
+        #     model_id=MODEL,
+        #     gc_method=GC_METHODS,
+        # ),
+        # expand(
+        #     "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-gcMethod{gc_method}-compare_gl12_platform0_qsbeta0567-R_full.RData",
+        #     simid=simulation_id,
+        #     model_id=MODEL,
+        #     gc_method=GC_METHODS,
+        # ),
+        # expand(
+        #     "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-gcMethod{gc_method}-compare_gl12_platform0_qsbeta0567-R_sumSamplesMeanReps.RData",
+        #     simid=simulation_id,
+        #     model_id=MODEL,
+        #     gc_method=GC_METHODS,
+        # ),
+
+
 # rule tidy_get_genotype_discordance_doGQ:
-    # input:
-        # "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}-snp_doGQ{dogq}.tsv",
-    # output:
-        # "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}-snp_doGQ{dogq}.tsv.tidy",
-    # shell:
-        # """
-        # awk -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v BETAVAL={wildcards.betaval} 'BEGIN{{FS="\t";OFS="\t"}}{{print $0,REP,DEPTH,BETAVAL}}' {input} > {output}
-        # """
-#
-#
-# rule tidy_get_genotype_discordance_doGQ7:
-    # input:
-        # "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}_doGQ7.tsv",
-    # output:
-        # "sim/{simid}/model_{model_id}/contig_{contig}/gc_evaluation/genotype_discordance/{gc_method}_{glSpecs}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsval}_{betaval}_doGQ7.tsv.tidy",
-    # shell:
-        # """
-        # awk -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v BETAVAL={wildcards.betaval} 'BEGIN{{FS="\t";OFS="\t"}}{{print $0,REP,DEPTH,BETAVAL}}' {input} > {output}
-        # """
-#
-#
-# rule collect_get_genotype_discordance_qs_doGQ:
-    # input:
-        # expand(
-            # "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/genotype_discordance/{{gc_method}}_{{glSpecs}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}-snp_doGQ{{dogq}}.tsv.tidy",
-            # contig=CONTIG,
-            # depth=DEPTH,
-            # rep=REP,
-            # error_rate=ERROR_RATE,
-            # qsbeta=["0_0", "2_5", "2_6"],
-        # ),
-    # output:
-        # "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-{gc_method}-doGQ{dogq}.tsv",
-    # shell:
-        # """
-        # cat {input} > {output}
-        # """
-#
-#
-# rule collect_get_genotype_discordance_qs_doGQ7:
-    # input:
-        # expand(
-            # "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gc_evaluation/genotype_discordance/{{gc_method}}_{{glSpecs}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-qs{qsbeta}_doGQ7.tsv.tidy",
-            # contig=CONTIG,
-            # depth=DEPTH,
-            # rep=REP,
-            # error_rate=ERROR_RATE,
-            # qsbeta=["0_0", "2_5", "2_6", "2_7"],
-        # ),
-    # output:
-        # "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance_{glSpecs}/{simid}-{model_id}-{gc_method}-doGQ7.tsv",
-    # shell:
-        # """
-        # cat {input} > {output}
-        # """
+#     input:
+#         "sim/{simid}/model_{model_id}/contig_{contig}/gt_discordance/gcMethod_{gc_method}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}-gcMethod_{gc_method}.tsv",
+#     output:
+#         "sim/{simid}/model_{model_id}/contig_{contig}/gt_discordance/gcMethod_{gc_method}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}-gcMethod_{gc_method}.tidy.tsv",
+#     shell:
+#         """
+#         awk -v REP={wildcards.rep} -v DEPTH={wildcards.depth} -v VCFGLGL={wildcards.vcfgl_gl} -v VCFGLQSBETA={wildcards.vcfgl_qsbeta} -v VCFGLPLATFORM={wildcards.vcfgl_platform} -v GCMETHOD={wildcards.gc_method} 'BEGIN{{FS="\t";OFS="\t"}}{{print $0,REP,DEPTH,VCFGLGL,VCFGLQSBETA,VCFGLPLATFORM,GCMETHOD}}' {input} > {output}
+#         """
+
+
+# rule collect_tidy_get_genotype_discordance_doGQ:
+#     input:
+#         expand(
+#             "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gt_discordance/gcMethod_{{gc_method}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}-gcMethod_{{gc_method}}.tidy.tsv",
+#             contig=CONTIG,
+#             rep=REP,
+#             depth=DEPTH,
+#             error_rate=ERROR_RATE,
+#             vcfgl_qsbeta=["00", "25", "26", "27"],
+#             vcfgl_gl=["1", "2", "2p"],
+#             vcfgl_platform=[0, 1],
+#         ),
+#     output:
+#         "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-{gc_method}.tsv",
+#     shell:
+#         """
+#         cat {input} > {output}
+#         """
+
+
+# rule collect_tidy_nsnps_stats:
+#     input:
+#         expand(
+#             "sim/{{simid}}/model_{{model_id}}/contig_{contig}/stats/nSNPs/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}-gcMethod_{{gc_method}}.tidy.tsv",
+#             contig=CONTIG,
+#             rep=REP,
+#             depth=DEPTH,
+#             error_rate=ERROR_RATE,
+#             vcfgl_qsbeta=["00", "25", "26", "27"],
+#             vcfgl_gl=["1", "2", "2p"],
+#             vcfgl_platform=[0, 1],
+#         ),
+#     output:
+#         "sim/{simid}/model_{model_id}/stats/nSNPs/{simid}-{model_id}-{gc_method}-nSNPs.tsv",
+#     shell:
+#         """
+#         cat {input} > {output}
+#         """
+
+
+# rule save_doGQ_as_RData_sumSamplesReps:
+#     input:
+#         nSNPs="sim/{simid}/model_{model_id}/stats/nSNPs/{simid}-{model_id}-{gc_method}-nSNPs.tsv",
+#         tsvs=expand(
+#             "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gt_discordance/gcMethod_{{gc_method}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}-gcMethod_{{gc_method}}.tidy.tsv",
+#             contig=CONTIG,
+#             rep=REP,
+#             depth=DEPTH,
+#             error_rate=ERROR_RATE,
+#             vcfgl_qsbeta=["00", "25", "26", "27"],
+#             vcfgl_gl=["1", "2"],
+#             vcfgl_platform=[0],
+#         ),
+#     output:
+#         "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-gcMethod{gc_method}-compare_gl12_platform0_qsbeta0567-R_sumSamplesReps.RData",
+#     shell:
+#         """
+#         Rscript scripts/save_doGQ_as_RData_sumSamplesReps.R {input.nSNPs} {output} {input.tsvs}
+#         """
+
+
+# rule save_doGQ_as_RData_sumSamplesMeanReps:
+#     input:
+#         nSNPs="sim/{simid}/model_{model_id}/stats/nSNPs/{simid}-{model_id}-{gc_method}-nSNPs.tsv",
+#         tsvs=expand(
+#             "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gt_discordance/gcMethod_{{gc_method}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}-gcMethod_{{gc_method}}.tidy.tsv",
+#             contig=CONTIG,
+#             rep=REP,
+#             depth=DEPTH,
+#             error_rate=ERROR_RATE,
+#             vcfgl_qsbeta=["00", "25", "26", "27"],
+#             vcfgl_gl=["1", "2"],
+#             vcfgl_platform=[0],
+#         ),
+#     output:
+#         "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-gcMethod{gc_method}-compare_gl12_platform0_qsbeta0567-R_sumSamplesMeanReps.RData",
+#     shell:
+#         """
+#         Rscript scripts/save_doGQ_as_RData_sumSamplesMeanReps.R {input.nSNPs} {output} {input.tsvs}
+#         """
+
+
+# rule save_doGQ_as_RData:
+#     input:
+#         nSNPs="sim/{simid}/model_{model_id}/stats/nSNPs/{simid}-{model_id}-{gc_method}-nSNPs.tsv",
+#         tsvs=expand(
+#             "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gt_discordance/gcMethod_{{gc_method}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}-gcMethod_{{gc_method}}.tidy.tsv",
+#             contig=CONTIG,
+#             rep=REP,
+#             depth=DEPTH,
+#             error_rate=ERROR_RATE,
+#             vcfgl_qsbeta=["00", "25", "26", "27"],
+#             vcfgl_gl=["1", "2", "2p"],
+#             vcfgl_platform=[0,1],
+#         ),
+#     output:
+#         "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-gcMethod{gc_method}-compare_gl12_platform0_qsbeta0567-R_full.RData",
+#     shell:
+#         """
+#         Rscript scripts/save_doGQ_as_RData.R {input.nSNPs} {output} {input.tsvs}
+#         """
+
+
+# rule save_doGQ_as_RData:
+#     input:
+#         expand(
+#             "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gt_discordance/gcMethod_{{gc_method}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}-gcMethod_{{gc_method}}.tidy.tsv",
+#             contig=CONTIG,
+#             rep=REP,
+#             depth=DEPTH,
+#             error_rate=ERROR_RATE,
+#             vcfgl_qsbeta=["00", "25", "26", "27"],
+#             vcfgl_gl=["1", "2", "2p"],
+#             vcfgl_platform=[0, 1],
+#         ),
+#     output:
+#         "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-gcMethod{gc_method}-compare_all.RData",
+#     shell:
+#         """
+#         Rscript scripts/save_doGQ_as_RData.R {output} {input}
+#         """
+
+
+rule save_doGQ_as_RData_sumSamplesMeanReps:
+    input:
+        expand(
+            "sim/{{simid}}/model_{{model_id}}/contig_{contig}/gt_discordance/gcMethod_{{gc_method}}/{{simid}}-{{model_id}}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}-gcMethod_{{gc_method}}.tidy.tsv",
+            contig=CONTIG,
+            rep=REP,
+            depth=DEPTH,
+            error_rate=ERROR_RATE,
+            vcfgl_qsbeta=["00", "25", "26", "27"],
+            vcfgl_gl=["1", "2", "2p"],
+            vcfgl_platform=[0, 1],
+        ),
+    output:
+        "sim/{simid}/model_{model_id}/gc_evaluation/genotype_discordance/{simid}-{model_id}-gcMethod{gc_method}-sumSamples_meanReps_all.RData",
+    shell:
+        """
+        Rscript scripts/save_doGQ_as_RData_sumSamplesMeanReps.R {output} {input}
+        """

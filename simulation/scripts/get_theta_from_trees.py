@@ -12,7 +12,7 @@ def wattersons_theta(segregating_sites, sample_size):
 
 
 ts = tskit.load(
-    "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/simulation/sim/sim_vcfgl_2312/model_OutOfAfrica_3G09/contig_chr22/trees/sim_vcfgl_2312-OutOfAfrica_3G09-chr22.trees"
+    "/maps/projects/lundbeck/scratch/pfs488/vcfgl/vcfgl_paper_analyses/simulation/sim/sim_vcfgl_2401/model_OutOfAfrica_3G09/contig_chr22/trees/sim_vcfgl_2401-OutOfAfrica_3G09-chr22.trees"
 )
 
 # We simulate 50 inds from YRI and 50 inds from CEU
@@ -63,13 +63,13 @@ print(f"Theta_YRI = {theta(Ne_YRI, mutation_rate):.6f}")
 print(f"Theta_CEU = {theta(Ne_CEU, mutation_rate):.6f}")
 print(f"Theta_total = {theta(Ne_total, mutation_rate):.6f}")
 
-contig_mutation_rate = 1.29e-08
-
-print(f"Using contig mutation rate: {contig_mutation_rate}")
-print(f"Theta_YRI_2 = {theta(Ne_YRI, contig_mutation_rate):.6f}")
-print(f"Theta_CEU_2 = {theta(Ne_CEU, contig_mutation_rate):.6f}")
-print(f"Theta_total_2 = {theta(Ne_total, contig_mutation_rate):.6f}")
-
+#  contig_mutation_rate = 1.29e-08
+#
+#  print(f"Using contig mutation rate: {contig_mutation_rate}")
+#  print(f"Theta_YRI_2 = {theta(Ne_YRI, contig_mutation_rate):.6f}")
+#  print(f"Theta_CEU_2 = {theta(Ne_CEU, contig_mutation_rate):.6f}")
+#  print(f"Theta_total_2 = {theta(Ne_total, contig_mutation_rate):.6f}")
+#
 
 # # print("\n\n\n\n\n")
 # # outf = open("delme.vcf", "w")
@@ -150,7 +150,7 @@ print(f"Theta_total_2 = {theta(Ne_total, contig_mutation_rate):.6f}")
 # ts = engine.simulate(model, contig, samples, seed=seedval)
 # ts2 = engine.simulate(model, contig, samples, seed=seedval, msprime_model="dtwf")
 
-# ts3=tskit.load("sim/prevsim_vcfgl_2312/model_OutOfAfrica_3G09/contig_chr22/trees/sim_vcfgl_2312-OutOfAfrica_3G09-chr22.trees")
+# ts3=tskit.load("sim/prevsim_vcfgl_2401/model_OutOfAfrica_3G09/contig_chr22/trees/sim_vcfgl_2401-OutOfAfrica_3G09-chr22.trees")
 
 
 # print(ts3)

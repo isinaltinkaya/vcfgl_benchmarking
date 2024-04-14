@@ -34,72 +34,96 @@ GLMODELS = [1, 2]
 
 rule all:
     input:
-        # expand(
-            # "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
-            # simid=simulation_id,
-            # model_id=MODEL,
-            # contig=CONTIG,
-            # rep=REP,
-            # depth=DEPTH,
-            # error_rate=ERROR_RATE,
-            # qsbeta=["0_0", "2_5", "2_6", "2_7"],
-            # glModel=[1, 2],
-        # ),
-        # expand(
-            # "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_precise1_gl2/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
-            # simid=simulation_id,
-            # model_id=MODEL,
-            # contig=CONTIG,
-            # rep=REP,
-            # depth=DEPTH,
-            # error_rate=ERROR_RATE,
-            # qsbeta=["0_0", "2_5", "2_6", "2_7"],
-        # ),
-        # expand(
-            # "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_precise1_gl2/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
-            # simid=simulation_id,
-            # model_id=MODEL,
-            # contig=CONTIG,
-            # rep=REP,
-            # depth=DEPTH,
-            # error_rate=ERROR_RATE,
-            # qsbeta=["0_0", "2_5", "2_6", "2_7"],
-        # ),
         expand(
-        "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_platform1_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
+            "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}.bcf",
             simid=simulation_id,
             model_id=MODEL,
             contig=CONTIG,
             rep=REP,
             depth=DEPTH,
             error_rate=ERROR_RATE,
-            qsbeta=["0_0", "2_5", "2_6", "2_7"],
-			glModel=[1, 2],
+            vcfgl_qsbeta=["00", "25", "26", "27"],
+            vcfgl_gl=["1", "2", "2p"],
+            vcfgl_platform=[0, 1],
         ),
 
+
+def get_gl_params(wildcards):
+    if wildcards.vcfgl_gl == "1":
+        return " --precise-gl 0 --gl-model 1 "
+    elif wildcards.vcfgl_gl == "2":
+        return " --precise-gl 0 --gl-model 2 "
+    elif wildcards.vcfgl_gl == "2p":
+        return " --precise-gl 1 --gl-model 2 "
+    else:
+        raise ValueError("Invalid gl model")
+
+
 def get_error_params(wildcards):
-    if wildcards.qsbeta == "0_0":
+    if wildcards.vcfgl_qsbeta == "00":
         return " --error-qs 0 "
     else:
         return str(
             " --error-qs "
-            + wildcards.qsbeta.split("_")[0]
+            + wildcards.vcfgl_qsbeta[0]
             + " --beta-variance 1e-"
-            + wildcards.qsbeta.split("_")[1]
+            + wildcards.vcfgl_qsbeta[1]
         )
 
+#
+# rule simulate_vcfgl:
+    # input:
+        # "sim/{simid}/model_{model_id}/contig_{contig}/vcf/{simid}-{model_id}-{contig}.vcf",
+    # output:
+        # "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}.bcf",
+    # params:
+        # prefix="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}",
+        # random_seed=lambda wildcards: str(int(wildcards.rep) + 1),
+        # errparam=get_error_params,
+        # glparam=get_gl_params,
+    # log:
+        # "sim/{simid}/logs/model_{model_id}/contig_{contig}/vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}.bcf",
+    # shell:
+        # """
+        # ({VCFGL} -i {input} \
+                # -o {params.prefix} \
+                # -O b \
+                # --depth {wildcards.depth} \
+                # --error-rate {wildcards.error_rate}  \
+                # {params.errparam} \
+                # -addQS 1 \
+                # -explode 1 \
+                # -addInfoAD 1 \
+                # -addFormatAD 1 \
+                # -addFormatDP 1 \
+                # -addPL 1 \
+                # {params.glparam} \
+                # -printTruth 1 \
+                # -printPileup 1 \
+                # --rm-invar-sites 3 \
+                # --rm-empty-sites 1 \
+                # -doUnobserved 1 \
+                # --source 1 \
+                # --platform {wildcards.vcfgl_platform} \
+                # --seed {params.random_seed} ) 2> {log}
+        # """
+#
 
-rule simulate_vcfgl_var_qs_error:
+# 240131 update for sim_2402
+# --rm-invar-sites 0 \
+# --rm-empty-sites 0 \
+rule simulate_vcfgl:
     input:
         "sim/{simid}/model_{model_id}/contig_{contig}/vcf/{simid}-{model_id}-{contig}.vcf",
     output:
-        "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
+        "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}.bcf",
     params:
-        prefix="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}",
+        prefix="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}",
         random_seed=lambda wildcards: str(int(wildcards.rep) + 1),
         errparam=get_error_params,
+        glparam=get_gl_params,
     log:
-        "sim/{simid}/logs/model_{model_id}/contig_{contig}/vcfgl_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
+        "sim/{simid}/logs/model_{model_id}/contig_{contig}/vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}-vcfgl_platform{vcfgl_platform}_gl{vcfgl_gl}_qs{vcfgl_qsbeta}.bcf",
     shell:
         """
         ({VCFGL} -i {input} \
@@ -109,91 +133,19 @@ rule simulate_vcfgl_var_qs_error:
                 --error-rate {wildcards.error_rate}  \
                 {params.errparam} \
                 -addQS 1 \
-                -explode 0 \
+                -explode 1 \
                 -addInfoAD 1 \
                 -addFormatAD 1 \
                 -addFormatDP 1 \
                 -addPL 1 \
-                -GL {wildcards.glModel} \
+                {params.glparam} \
                 -printTruth 1 \
                 -printPileup 1 \
-                --rm-invar-sites 3 \
-                --rm-empty-sites 1 \
+                --rm-invar-sites 0 \
+                --rm-empty-sites 0 \
                 -doUnobserved 1 \
-                --precise-gl 0 \
-                --seed {params.random_seed} ) 2> {log}
-        """
-
-
-rule simulate_vcfgl_var_qs_error_precisegl1:
-    input:
-        "sim/{simid}/model_{model_id}/contig_{contig}/vcf/{simid}-{model_id}-{contig}.vcf",
-    output:
-        "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_precise1_gl2/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
-    params:
-        prefix="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_precise1_gl2/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}",
-        random_seed=lambda wildcards: str(int(wildcards.rep) + 1),
-        errparam=get_error_params,
-    log:
-        "sim/{simid}/logs/model_{model_id}/contig_{contig}/vcfgl_precise1_gl2/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
-    shell:
-        """
-        ({VCFGL} -i {input} \
-                -o {params.prefix} \
-                -O b \
-                --depth {wildcards.depth} \
-                --error-rate {wildcards.error_rate}  \
-                {params.errparam} \
-                -addQS 1 \
-                -explode 0 \
-                -addInfoAD 1 \
-                -addFormatAD 1 \
-                -addFormatDP 1 \
-                -addPL 1 \
-                -GL 2 \
-                -printTruth 1 \
-                -printPileup 1 \
-                --rm-invar-sites 3 \
-                --rm-empty-sites 1 \
-                --precise-gl 1 \
-                -doUnobserved 1 \
-                --seed {params.random_seed} ) 2> {log}
-        """
-
-
-rule simulate_vcfgl_var_qs_error_platform1:
-    input:
-        "sim/{simid}/model_{model_id}/contig_{contig}/vcf/{simid}-{model_id}-{contig}.vcf",
-    output:
-        "sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_platform1_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
-    params:
-        prefix="sim/{simid}/model_{model_id}/contig_{contig}/vcfgl_platform1_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}",
-        random_seed=lambda wildcards: str(int(wildcards.rep) + 1),
-        errparam=get_error_params,
-    log:
-        "sim/{simid}/logs/model_{model_id}/contig_{contig}/vcfgl_platform1_gl{glModel}/{simid}-{model_id}-{contig}-rep{rep}-d{depth}-e{error_rate}_qs{qsbeta}.bcf",
-    shell:
-        """
-        ({VCFGL} -i {input} \
-                -o {params.prefix} \
-                -O b \
-                --depth {wildcards.depth} \
-                --error-rate {wildcards.error_rate}  \
-                {params.errparam} \
-                -addQS 1 \
-                -explode 0 \
-                -addInfoAD 1 \
-                -addFormatAD 1 \
-                -addFormatDP 1 \
-                -addPL 1 \
-                -GL {wildcards.glModel} \
-                -printTruth 1 \
-                -printPileup 1 \
-                --rm-invar-sites 3 \
-                --rm-empty-sites 1 \
-                -doUnobserved 1 \
-                --precise-gl 0 \
-                --platform 1 \
+                --source 1 \
+                --platform {wildcards.vcfgl_platform} \
                 --seed {params.random_seed} ) 2> {log}
         """
 
